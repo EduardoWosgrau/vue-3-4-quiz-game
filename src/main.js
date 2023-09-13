@@ -4,5 +4,5 @@ import axios from 'axios'
 import VueAxios from 'vue-axios'
 
 createApp(App)
-    .use(axios, VueAxios, axios)
+    .use(VueAxios, axios)
     .mount('#app');
