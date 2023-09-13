@@ -1,21 +1,57 @@
 <template>
   <div>
-    <h1 v-html="this.question"></h1>
-
-    <input type="radio" name="options" value="True" />
-    <label>True</label><br />
-
-    <input type="radio" name="options" value="False" />
-    <label>False</label><br />
-
-    <button class="send" type="button">Send</button>
+    <template v-if="this.question">
+      <h1 v-html="this.question"></h1>
+      <template v-for="(answer, index) in this.answers" v-bind:key="index">
+        <input
+          :disabled="this.answerSubmitted"
+          type="radio"
+          name="options"
+          :value="answer"
+          v-model="this.chosenAnswer"
+        />
+        <label v-html="answer"></label><br />
+      </template>
+      <button
+        class="send"
+        type="button"
+        @click="this.submitAnswer()"
+        v-if="!this.answerSubmitted"
+      >Send</button>
+      <section v-if="this.answerSubmitted">
+        <h4
+          v-if="this.chosenAnswer == this.correctAnswer"
+          v-html="'&#9989; Correct!'"
+        ></h4>
+        <h4
+          v-else
+          v-html="'&#10060; The correct answer is ' + this.correctAnswer + '.'"
+        ></h4>
+        <button
+          class="send"
+          type="button"
+          @click="this.getNextQuestion()"
+        >Next Question</button>
+      </section>
+    </template>
   </div>
 </template>
 
 <script>
 export default {
   name: "App",
-
+  data(){
+    return {
+      question: undefined,
+      incorrectAnswers: undefined,
+      correctAnswer: undefined,
+      chosenAnswer: undefined,
+      answerSubmitted: false
+    }
+  },
+  created(){
+    this.getNextQuestion();
+  },
   computed: {
     answers(){
       var answers = JSON.parse(JSON.stringify(this.incorrectAnswers));
@@ -23,23 +59,31 @@ export default {
       return answers;
     } 
   },
+  methods: {
+    submitAnswer(){
+      if (!this.chosenAnswer){
+        alert("Pick an option!");
+        return;
+      }
+      this.answerSubmitted = true;
+      if (this.chosenAnswer == this.correctAnswer){
+        console.log("Correct!");
+        return;
+      }
+      console.log("Incorrect Answer. :(");
+    },
 
-  data(){
-    return {
-      question: undefined,
-      incorrectAnswers: undefined,
-      correctAnswer: undefined,
-    }
-  },
-
-  created(){
-    this.axios
-      .get("https://opentdb.com/api.php?amount=1&category=15")
+    getNextQuestion(){
+      this.axios
+      .get("https://opentdb.com/api.php?amount=1&category=18")
       .then((response) => {
         this.question = response.data.results[0].question;
         this.incorrectAnswers = response.data.results[0].incorrect_answers;
         this.correctAnswer = response.data.results[0].correct_answer;
       })
+      this.answerSubmitted = false;
+      this.chosenAnswer = undefined;
+    }
   }
 };
 
